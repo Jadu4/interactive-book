@@ -1,0 +1,49 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Дополнительные стили */
+.ql-editor {
+  min-height: 200px;
+}
+
+.ql-toolbar {
+  border-top-left-radius: 0.5rem;
+  border-top-right-radius: 0.5rem;
+}
+
+.ql-container {
+  border-bottom-left-radius: 0.5rem;
+  border-bottom-right-radius: 0.5rem;
+}
+
+.dark .ql-toolbar {
+  background-color: #1f2937;
+  border-color: #374151;
+}
+
+.dark .ql-container {
+  background-color: #111827;
+  border-color: #374151;
+}
+
+.dark .ql-editor {
+  color: #e5e7eb;
+}
+
+.dark .ql-picker {
+  color: #e5e7eb;
+}
+
+.dark .ql-stroke {
+  stroke: #e5e7eb;
+}
+
+.dark .ql-fill {
+  fill: #e5e7eb;
+}
+
+.dark .ql-picker-options {
+  background-color: #1f2937;
+  border-color: #374151;
+} 

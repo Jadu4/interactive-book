@@ -1,4 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
+import ReactQuill from 'react-quill';
+import 'react-quill/dist/quill.snow.css';
+import './App.css';
 
 export default function App() {
   const [currentPage, setCurrentPage] = useState(null); // null = обложка
@@ -78,7 +81,7 @@ export default function App() {
   };
 
   const submitPassword = () => {
-    if (password === 'adminroot') {
+    if (password === process.env.REACT_APP_ADMIN_PASSWORD) {
       setIsAdmin(true);
       localStorage.setItem('book_is_admin', 'true');
       setShowPasswordInput(false);
@@ -175,7 +178,14 @@ export default function App() {
     const newSection = {
       id: bookStructure.length,
       title: newSectionName.trim(),
-      chapters: [],
+      chapters: [{
+        id: 0,
+        title: "Новая глава",
+        pages: [{
+          content: '<p>Новый контент</p>',
+          isEditing: true
+        }]
+      }]
     };
     setBookStructure([...bookStructure, newSection]);
     setShowAddSectionModal(false);
@@ -188,7 +198,10 @@ export default function App() {
     const newChapter = {
       id: section.chapters.length,
       title: `Новая глава ${section.chapters.length + 1}`,
-      pages: [{ content: '<p>Новый контент</p>', isEditing: true }],
+      pages: [{
+        content: '<p>Новый контент</p>',
+        isEditing: true
+      }]
     };
     section.chapters.push(newChapter);
     setBookStructure(updated);
@@ -198,7 +211,10 @@ export default function App() {
   const addNewPageToChapter = (sectionId, chapterId) => {
     const updated = [...bookStructure];
     const chapter = updated[sectionId].chapters[chapterId];
-    chapter.pages.push({ content: '<p>Новая страница</p>', isEditing: true });
+    chapter.pages.push({
+      content: '<p>Новая страница</p>',
+      isEditing: true
+    });
     setBookStructure(updated);
     setCurrentPage(flatPages.length);
   };
@@ -298,6 +314,18 @@ export default function App() {
       const html = editorRef.current.innerHTML;
       updatePageContent(currentSectionId, currentChapterId, currentPageId, html);
     }
+  };
+
+  // Обновляем редактор
+  const modules = {
+    toolbar: [
+      [{ 'header': [1, 2, 3, 4, 5, 6, false] }],
+      ['bold', 'italic', 'underline', 'strike'],
+      [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+      [{ 'color': [] }, { 'background': [] }],
+      ['link', 'image'],
+      ['clean']
+    ],
   };
 
   return (
@@ -420,25 +448,21 @@ export default function App() {
 
               {/* Редактор или просмотр */}
               {isAdmin && currentPageData?.isEditing ? (
-                <div
-                  ref={editorRef}
-                  contentEditable
-                  suppressContentEditableWarning
-                  dangerouslySetInnerHTML={{ __html: currentPageData.content }}
-                  onInput={handleEditorInput}
-                  onBlur={() => {
-                    const html = editorRef.current.innerHTML;
-                    updatePageContent(currentSectionId, currentChapterId, currentPageId, html);
-                  }}
-                  className={`w-full min-h-40 p-3 border rounded mb-4 outline-none ${
-                    darkMode ? 'bg-gray-800 text-white border-gray-600' : 'bg-white text-gray-900 border-gray-300'
-                  }`}
-                ></div>
+                <div className="mb-4">
+                  <ReactQuill
+                    value={currentPageData.content}
+                    onChange={(content) => {
+                      if (currentSectionId !== null && currentChapterId !== null && currentPageId !== null) {
+                        updatePageContent(currentSectionId, currentChapterId, currentPageId, content);
+                      }
+                    }}
+                    modules={modules}
+                    className={`${darkMode ? 'dark' : ''}`}
+                  />
+                </div>
               ) : (
                 <div
-                  className={`mb-4 ${
-                    darkMode ? 'text-gray-300' : 'text-gray-700'
-                  }`}
+                  className={`prose ${darkMode ? 'dark:prose-invert' : ''} max-w-none`}
                   dangerouslySetInnerHTML={{ __html: currentPageData?.content || '' }}
                 />
               )}
@@ -511,16 +535,32 @@ export default function App() {
 
             {/* Кнопка добавления раздела */}
             {isAdmin && (
-              <div className="mb-4">
+              <div className="mt-4 space-y-2">
                 <button
                   onClick={addNewSection}
-                  className="flex items-center gap-1 text-blue-500 hover:text-blue-600"
+                  className="w-full px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
                 >
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-                  </svg>
                   Добавить раздел
                 </button>
+                {bookStructure.map((section, sectionIndex) => (
+                  <div key={section.id} className="space-y-2">
+                    <button
+                      onClick={() => addNewChapterToSection(sectionIndex)}
+                      className="w-full px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600"
+                    >
+                      Добавить главу в "{section.title}"
+                    </button>
+                    {section.chapters.map((chapter, chapterIndex) => (
+                      <button
+                        key={chapter.id}
+                        onClick={() => addNewPageToChapter(sectionIndex, chapterIndex)}
+                        className="w-full px-4 py-2 bg-yellow-500 text-white rounded hover:bg-yellow-600"
+                      >
+                        Добавить страницу в "{chapter.title}"
+                      </button>
+                    ))}
+                  </div>
+                ))}
               </div>
             )}
 
