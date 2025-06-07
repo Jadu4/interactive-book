@@ -1,0 +1,10 @@
+{
+  "files": {
+    "main.js": "/interactive-book/static/js/main.dbdf097c.js",
+    "index.html": "/interactive-book/index.html",
+    "main.dbdf097c.js.map": "/interactive-book/static/js/main.dbdf097c.js.map"
+  },
+  "entrypoints": [
+    "static/js/main.dbdf097c.js"
+  ]
+}
